@@ -27,7 +27,8 @@ class FBIApp(Cmd):
     @options([
         make_option('-f', '--first-name', type="string", help="Full name of agent.", dest="first_name", default=None),
         make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),
-        make_option('-a', '--all', action="store_true", help="Find all matches.", dest="all", default=None)
+        make_option('-a', '--all', action="store_true", help="Find all matches.", dest="all", default=None),
+        make_option('-d', '--detail', action="store_true", help="Show full detail.", dest="detail", default=False)
     ])
     def do_find(self, arg, opts=None):
         """Find wiseguy(s) matching query"""
@@ -35,16 +36,21 @@ class FBIApp(Cmd):
         wiseguy = Wiseguy.find_all(**query) if opts.all else Wiseguy.find_one(**query)
 
         if isinstance(wiseguy, Wiseguy):
-            self.print_wiseguy(wiseguy)
+            print "%s" % wiseguy
+            if opts.detail:
+                self.print_wiseguy(wiseguy)
         elif isinstance(wiseguy, list):
             for w in wiseguy:
-                self.print_wiseguy(w)
+                print "%s" % w
+                if opts.detail:
+                    self.print_wiseguy(w)
             print "Found %d wiseguys" % len(wiseguy)
         else:
             print "No Wiseguy found!"
 
     @options([
-        make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None)
+        make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),
+        make_option('-l', '--level', action="store", type="string", help="Level up to which followers are needed.", dest="level", default=-1)
     ])
     def do_followers(self, arg, opts=None):
         """Find the number of followers of a wiseguy"""
@@ -54,17 +60,15 @@ class FBIApp(Cmd):
             print "No Wiseguy found!"
             return
 
-        followers = wiseguy.followers()
-
-        print followers
+        followers = wiseguy.followers(level=opts.level)
 
         if isinstance(followers, list):
+            print "Followers of %s:\n" % wiseguy
             for f in followers:
-                self.print_wiseguy(f)
-            print "Found %d wiseguy(s) who are followers of %s %s." % (
+                print f
+            print "\nFound %d wiseguy(s) who are followers of %s.\n" % (
                 len(followers),
-                wiseguy.get('first_name'),
-                wiseguy.get('last_name')
+                wiseguy
             )
         else:
             print "No followers found!"
@@ -86,10 +90,8 @@ class FBIApp(Cmd):
             if wiseguy:
                 followers[wiseguy] = len(wiseguy.followers())
 
-                print "[%s] %s %s: %s" % (
-                    wid,
-                    wiseguy.get('first_name'),
-                    wiseguy.get('last_name'),
+                print "%s: %s" % (
+                    wiseguy,
                     str(followers[wiseguy])
                 )
             else:
@@ -217,14 +219,7 @@ class FBIApp(Cmd):
             print "No heir found!"
             return
 
-        print "Heir to [%s] %s %s is:\n\t [%s] %s %s" % (
-            wiseguy.get('id'),
-            wiseguy.get('first_name'),
-            wiseguy.get('last_name'),
-            heir.get('id'),
-            heir.get('first_name'),
-            heir.get('last_name'),
-        )
+        print "Heir to %s is:\n\t %s" % (wiseguy, heir)
 
 
     @options([
@@ -238,6 +233,8 @@ class FBIApp(Cmd):
         if not wiseguy:
             print "No Wiseguy found!"
             return
+
+        print "Boss of ", wiseguy.to_string(), ":\n"
 
         boss = Wiseguy.find_one(id=wiseguy.get('boss_id'))
 

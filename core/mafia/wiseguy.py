@@ -5,15 +5,11 @@ from core.mafia.mafia import Mafia
 
 class TreeNode():
     def __init__(self, name, followers):
-        self.name = name
+        self.name = str(name)
 
         self.children = []
         for follower in followers:
-            self.children.append(TreeNode("%s %s [%s]" % (
-            follower.get('first_name'),
-            follower.get('last_name'),
-            follower.get('id')
-        ), follower.followers(level=1)))
+            self.children.append(TreeNode(follower, follower.followers(level=1)))
 
     def __str__(self):
         return self.name
@@ -119,10 +115,15 @@ class Wiseguy(Criminal):
 
 
     def tree(self):
-        root = TreeNode("%s %s [%s]" % (
+        root = TreeNode(self, self.followers(level=1))
+        return root
+
+    def __str__(self):
+        return self.to_string()
+
+    def to_string(self):
+        return "%s %s [%s]"% (
             self.get('first_name'),
             self.get('last_name'),
             self.get('id')
-        ), self.followers(level=1))
-
-        return root
+        )
