@@ -109,9 +109,38 @@ class FBIApp(Cmd):
     def do_remove(self, arg, opts=None):
         """Remove a wiseguy"""
 
-    @options([])
+    @options([
+        make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),
+        make_option('-b', '--boss', action="store", type="string", help="New boss ID of agent.", dest="boss", default=None)
+    ])
     def do_reassign(self, arg, opts=None):
         """Reassign a wiseguy to another boss"""
+        if not opts.boss:
+            print "Must provide a status!"
+            return
+
+        if not opts.id:
+            print "Must provide an ID!"
+            return
+
+        # Locate the wiseguy
+        wiseguy = Wiseguy.find_one(id=opts.id)
+
+        if not wiseguy:
+            print "No Wiseguy found!"
+            return
+
+        # Locate the boss
+        boss = Wiseguy.find_one(id=opts.boss)
+
+        if not boss:
+            print "No Boss found!"
+            return
+
+        wiseguy.reassign_to(boss)
+
+        print "Done. %s has been reassigned to %s" % (wiseguy, boss)
+
 
     @options([
         make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),

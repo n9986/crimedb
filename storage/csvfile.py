@@ -32,6 +32,10 @@ class CSVStorage(AbstractNodeStorage):
         boo = {val:row[idx] for idx, val in enumerate(self.headers)}
         return boo
 
+    def node_data_to_row(self, data):
+        boo = [data[val] if val in data else None for idx, val in enumerate(self.headers)]
+        return boo
+
     def create(self, node):
         # Add at end
         pass
@@ -63,8 +67,24 @@ class CSVStorage(AbstractNodeStorage):
 
     def update(self, node):
         # Read AND Write until row found, update with new data
+        with open(self.db_path + ".temp.csv", 'w') as op:
+            writer = csv.writer(op)
+            with open(self.db_path, 'rU') as fp:
+                reader = csv.reader(fp)
 
-        pass
+                writer.writerow(reader.next())
+
+                for row in reader:
+                    if self.row_to_node_data(row)['id'] == node.get('id'):
+                        r = self.node_data_to_row(node.to_row())
+                        writer.writerow(r)
+                    else:
+                        writer.writerow(row)
+
+        with open(self.db_path + ".temp.csv", 'r') as ip:
+            with open(self.db_path, 'w') as sp:
+                sp.write(ip.read())
+
 
     def delete(self, node):
         # read() and delete the row

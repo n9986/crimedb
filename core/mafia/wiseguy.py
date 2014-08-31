@@ -49,6 +49,20 @@ class Wiseguy(Criminal):
         """Reassign this guy to a new boss. Will need to manipulate every child
         to have a new tree from this point on.
         """
+        followers = self.followers(level=1)
+
+        # Reset boss string.
+        self.set('boss_path', "%s%s/" % (boss.get('boss_path'), self.get('id')))
+
+        # Save
+        self.save()
+
+        # print self, self.get('boss_path'), boss.get('boss_path')
+
+        for follower in followers:
+            follower.reassign_to(self)
+
+
 
     def heir(self):
         """Find the heir of this guy. Calculate according to this formula:
@@ -127,3 +141,6 @@ class Wiseguy(Criminal):
             self.get('last_name'),
             self.get('id')
         )
+
+    def save(self):
+        Mafia.update(self)

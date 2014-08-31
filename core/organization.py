@@ -8,3 +8,7 @@ class Organization(object):
     @classmethod
     def find(cls, criminal, find_all=False):
         return cls.store.read(criminal, find_all=find_all)
+
+    @classmethod
+    def update(cls, criminal):
+        return cls.store.update(criminal)
