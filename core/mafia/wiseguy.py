@@ -1,5 +1,22 @@
+import operator
 from core.criminal import Criminal
 from core.mafia.mafia import Mafia
+
+
+class TreeNode():
+    def __init__(self, name, followers):
+        self.name = name
+
+        self.children = []
+        for follower in followers:
+            self.children.append(TreeNode("%s %s [%s]" % (
+            follower.get('first_name'),
+            follower.get('last_name'),
+            follower.get('id')
+        ), follower.followers(level=1)))
+
+    def __str__(self):
+        return self.name
 
 
 class Wiseguy(Criminal):
@@ -24,7 +41,6 @@ class Wiseguy(Criminal):
         # Since rows are dicts anyway, I will just use this shortcut
         return Mafia.find(Wiseguy.from_dict(kwargs), find_all=False)
 
-
     @classmethod
     def from_dict(cls, data):
         """Create a wiseguy from a dictionary
@@ -33,16 +49,80 @@ class Wiseguy(Criminal):
         wiseguy.from_row(data)
         return wiseguy
 
-
-    def reassign(self, boss):
+    def reassign_to(self, boss):
         """Reassign this guy to a new boss. Will need to manipulate every child
         to have a new tree from this point on.
         """
 
-    def followers(self):
+    def heir(self):
+        """Find the heir of this guy. Calculate according to this formula:
+
+        - Firstly, oldest wiseguy at the same level.
+        - Second candidate is immediate and oldest subordinate.
+        - Finally, return None if none match (only if no subordinates or if just
+        one).
+        """
+        path = self.get('boss_path')
+        depth = path.count('/') - 1
+
+        ww = Wiseguy()
+
+        # Simple regex to find the boss paths of same size. Which also implies
+        # they are all at the same level in the tree.
+        ww.set('boss_path', "^\/([0-9]+\/){%d}$" % depth)
+
+        # Run the search and viola
+        heir_candidates = Mafia.find(ww, find_all=True)
+
+        if len(heir_candidates) == 0:
+            heir_candidates = self.followers()
+
+            if len(heir_candidates) == 0:
+                return None
+
+        date_sorted_wiseguys = []
+        for wiseguy in heir_candidates:
+            if wiseguy.get('id') != self.get('id'):
+                date_sorted_wiseguys.append((wiseguy, wiseguy.get('date_of_initiation')))
+
+        date_sorted_wiseguys = sorted(
+            date_sorted_wiseguys,
+            key=operator.itemgetter(1)
+        )
+
+        return date_sorted_wiseguys[0][0]
+
+
+    def followers(self, level=-1):
         """Find all the followers of this guy
         """
+        self_depth = self.get('boss_path').count('/') - 1
+
         ww = Wiseguy()
         ww.set('boss_path', "%s%s/" % (self.get('boss_path'), '[0-9]+'))
-        return Mafia.find(ww, find_all=True)
+        followers = Mafia.find(ww, find_all=True)
 
+        if level > 0:
+            followers = filter(
+                lambda item: (item.get('boss_path').count('/') - 1) - self_depth <= level,
+                followers
+            )
+
+        return followers
+
+
+    def ex_followers(self):
+        """Find all ex followers of this guy
+        """
+        ww = Wiseguy()
+        ww.set('boss_history', "/%s/" % (self.get('id')))
+
+
+    def tree(self):
+        root = TreeNode("%s %s [%s]" % (
+            self.get('first_name'),
+            self.get('last_name'),
+            self.get('id')
+        ), self.followers(level=1))
+
+        return root

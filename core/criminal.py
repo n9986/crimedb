@@ -21,7 +21,7 @@ class Criminal(AbstractNode):
         self.add_attribute('middle_initials')
         self.add_attribute('active')
         self.add_attribute('status')
-        self.add_attribute('date_of_joining')
+        self.add_attribute('date_of_initiation')
 
 
     def get(self, name):

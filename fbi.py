@@ -1,3 +1,4 @@
+from asciitree import draw_tree
 from cmd2 import Cmd, make_option, options, Cmd2TestCase
 import unittest, optparse, sys
 from core.mafia.mafia import Mafia
@@ -110,23 +111,143 @@ class FBIApp(Cmd):
     def do_reassign(self, arg, opts=None):
         """Reassign a wiseguy to another boss"""
 
-    @options([])
+    @options([
+        make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),
+        make_option('-s', '--status', action="store", type="string", help="New status of agent.", dest="status", default=None)
+    ])
     def do_decommission(self, arg, opts=None):
-        """Remove a wiseguy from active duty and set a status"""
+        """Remove a wiseguy from active duty and set a status
+        """
+        if not opts.status:
+            print "Must provide a status!"
+            return
 
-    @options([])
+        if not opts.id:
+            print "Must provide an ID!"
+            return
+
+        # Locate the wiseguy
+        wiseguy = Wiseguy.find_one(id=opts.id)
+
+        if not wiseguy:
+            print "No Wiseguy found!"
+            return
+
+        # Find the heir
+        heir = wiseguy.heir()
+
+        if not heir:
+            print "No Heir found!"
+            return
+
+        # Reassign all the children to the heir
+        # Set boss history for all the children
+        followers = wiseguy.followers()
+
+        for follower in followers:
+            followers.reassign_to(heir)
+
+        # Deactivate the wiseguy
+        wiseguy.deactivate(status=opts.status)
+
+        print "Done!"
+
+    @options([
+        make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),
+        make_option('-s', '--status', action="store", type="string", help="New status of agent.", dest="status", default=None)
+    ])
     def do_recommission(self, arg, opts=None):
         """Reinstate a wiseguy to active duty automatically setting status to
-        active"""
+        active.
+        """
+        if not opts.status:
+            print "Must provide a status!"
+            return
 
-    @options([])
+        if not opts.id:
+            print "Must provide an ID!"
+            return
+
+        # Locate the wiseguy
+        wiseguy = Wiseguy.find_one(id=opts.id)
+
+        if not wiseguy:
+            print "No Wiseguy found!"
+            return
+
+        # Reactivate the wiseguy
+        wiseguy.reactivate(status=opts.status)
+
+        ex_followers = wiseguy.ex_followers()
+        for follower in ex_followers:
+            follower.reassign_to(wiseguy)
+
+        print "Done!"
+
+    @options([
+        make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),
+    ])
+    def do_tree(self, arg, opts=None):
+        """Draw an ASCII chart
+        """
+        wiseguy = Wiseguy.find_one(id=opts.id)
+
+        if not wiseguy:
+            print "No Wiseguy found!"
+            return
+
+        print draw_tree(wiseguy.tree())
+
+
+    @options([
+        make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),
+    ])
     def do_heir(self, arg, opts=None):
-        """Check who is next in line to a wiseguy to inherit followers"""
+        """Check who is next in line to a wiseguy to inherit followers
+        """
+        wiseguy = Wiseguy.find_one(id=opts.id)
 
-    @options([])
+        if not wiseguy:
+            print "No Wiseguy found!"
+            return
+
+        heir = wiseguy.heir()
+
+        if not heir:
+            print "No heir found!"
+            return
+
+        print "Heir to [%s] %s %s is:\n\t [%s] %s %s" % (
+            wiseguy.get('id'),
+            wiseguy.get('first_name'),
+            wiseguy.get('last_name'),
+            heir.get('id'),
+            heir.get('first_name'),
+            heir.get('last_name'),
+        )
+
+
+    @options([
+        make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),
+    ])
     def do_boss(self, arg, opts=None):
-        """Check the boss of a given wiseguy"""
-        self.stdout.write(self.colorize('booyeah', 'green'))
+        """Check the boss of a given wiseguy
+        """
+        wiseguy = Wiseguy.find_one(id=opts.id)
+
+        if not wiseguy:
+            print "No Wiseguy found!"
+            return
+
+        boss = Wiseguy.find_one(id=wiseguy.get('boss_id'))
+
+        if not boss:
+            print "No boss found! Might be a godfather or decommissioned wiseguy. :)"
+            return
+
+        self.print_wiseguy(boss)
+
+
 
     # do__load = None
     # do_load = None
