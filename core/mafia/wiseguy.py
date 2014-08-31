@@ -43,6 +43,6 @@ class Wiseguy(Criminal):
         """Find all the followers of this guy
         """
         ww = Wiseguy()
-        ww.set('bossPath', "%s%s/" % (self.get('bossPath'), '[0-9]+'))
+        ww.set('boss_path', "%s%s/" % (self.get('boss_path'), '[0-9]+'))
         return Mafia.find(ww, find_all=True)
 

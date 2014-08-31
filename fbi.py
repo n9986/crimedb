@@ -38,9 +38,9 @@ class FBIApp(Cmd):
         elif isinstance(wiseguy, list):
             for w in wiseguy:
                 self.print_wiseguy(w)
-            self.stdout.write(self.colorize('Found %d wiseguys\n' % len(wiseguy), 'blue'))
+            print "Found %d wiseguys" % len(wiseguy)
         else:
-            self.stdout.write(self.colorize('No Wiseguy found!\n\n', 'yellow'))
+            print "No Wiseguy found!"
 
     @options([
         make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None)
@@ -50,23 +50,23 @@ class FBIApp(Cmd):
         wiseguy = Wiseguy.find_one(id=opts.id)
 
         if not wiseguy:
-            self.stdout.write(self.colorize('No Wiseguy found!\n\n', 'yellow'))
+            print "No Wiseguy found!"
+            return
 
         followers = wiseguy.followers()
+
+        print followers
 
         if isinstance(followers, list):
             for f in followers:
                 self.print_wiseguy(f)
-            self.stdout.write(
-                self.colorize(
-                    'Found %d wiseguy(s) who are followers of %s %s.\n' % (len(followers),
-                                                                         wiseguy.get('first_name'),
-                                                                         wiseguy.get('last_name')),
-                    'blue'
-                )
+            print "Found %d wiseguy(s) who are followers of %s %s." % (
+                len(followers),
+                wiseguy.get('first_name'),
+                wiseguy.get('last_name')
             )
         else:
-            self.stdout.write(self.colorize('No followers found!\n\n', 'yellow'))
+            print "No followers found!"
 
 
     def do_compare(self, arg, opts=None):
@@ -77,7 +77,7 @@ class FBIApp(Cmd):
         followers = {}
         invalid = []
 
-        self.stdout.write('Follower counts: %s\n\n' % (','.join(invalid)))
+        print "Follower counts: %s" % (",".join(invalid))
 
         for wid in wid_list:
             wiseguy = Wiseguy.find_one(id=wid)
@@ -85,17 +85,17 @@ class FBIApp(Cmd):
             if wiseguy:
                 followers[wiseguy] = len(wiseguy.followers())
 
-                self.stdout.write('[%s] %s %s: %s\n' % (
+                print "[%s] %s %s: %s" % (
                     wid,
                     wiseguy.get('first_name'),
                     wiseguy.get('last_name'),
                     str(followers[wiseguy])
-                ))
+                )
             else:
                 invalid.append(wid)
 
         if len(invalid):
-            self.stdout.write('\nInvalid IDs: %s\n' % (','.join(invalid)))
+            print "Invalid IDs: %s" % (",".join(invalid))
 
 
     @options([])
