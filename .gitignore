@@ -1,0 +1,5 @@
+virtualenv/
+.DS_Store
+*.pyc
+*.db
+.idea/
