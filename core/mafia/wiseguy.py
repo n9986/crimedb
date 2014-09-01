@@ -51,8 +51,27 @@ class Wiseguy(Criminal):
         """
         followers = self.followers(level=1)
 
-        # Reset boss string.
+        # This is a bit tricky. Tracking the last boss.
+        # - If the new boss is the same as the old boss then no need to recompute
+        # boss history.
+        # - If the new boss exists in the boss history, then it is some old ex
+        # boss. Move whole tree there and erase boss history to that point.
+        # - If the new boss does not exist in the boss history, then add him to
+        # it.
+        boss_history = self.get('boss_history')
+        if boss.get('id') != self.get('boss_id'):
+            boss_history = self.get('boss_history')
+
+            try:
+                idx = boss_history.index(boss.get('id'))
+                boss_history = boss_history.replace(boss_history[idx+2:], "")
+            except:
+                boss_history += boss.get('id') + "/"
+
+        # Reset boss data.
         self.set('boss_path', "%s%s/" % (boss.get('boss_path'), self.get('id')))
+        self.set('boss_history', boss_history)
+        self.set('boss_id', boss.get('id'))
 
         # Save
         self.save()
@@ -62,6 +81,38 @@ class Wiseguy(Criminal):
         for follower in followers:
             follower.reassign_to(self)
 
+
+    def deactivate(self, status):
+        # Reassign all the children to the heir
+        # Set boss history for all the children
+        followers = self.followers(level=1)
+
+        # Find the heir
+        heir = self.heir()
+
+        last_boss = self.get('boss_history').split("/")
+
+        self.set('boss_path', '/%s/' % self.get('id'))
+        self.set(
+            'boss_history', ''
+        )
+        self.set('boss_id', "-1")
+        self.set('status', status)
+        self.set('active', "0")
+
+        # If no heir and no followers, then no need to assign
+        if not heir or len(followers) == 0:
+            return
+
+        for follower in followers:
+            followers.reassign_to(heir)
+
+
+    def reactivate(self, status):
+        ex_followers = Wiseguy.find_all(boss_history=self.get('id'))
+
+        for ex_follower in ex_followers:
+            ex_follower.reassign_to(self)
 
 
     def heir(self):
@@ -93,7 +144,8 @@ class Wiseguy(Criminal):
         date_sorted_wiseguys = []
         for wiseguy in heir_candidates:
             if wiseguy.get('id') != self.get('id'):
-                date_sorted_wiseguys.append((wiseguy, wiseguy.get('date_of_initiation')))
+                if wiseguy.get('active') == "1":
+                    date_sorted_wiseguys.append((wiseguy, wiseguy.get('date_of_initiation')))
 
         date_sorted_wiseguys = sorted(
             date_sorted_wiseguys,

@@ -164,24 +164,11 @@ class FBIApp(Cmd):
             print "No Wiseguy found!"
             return
 
-        # Find the heir
-        heir = wiseguy.heir()
-
-        if not heir:
-            print "No Heir found!"
-            return
-
-        # Reassign all the children to the heir
-        # Set boss history for all the children
-        followers = wiseguy.followers()
-
-        for follower in followers:
-            followers.reassign_to(heir)
-
         # Deactivate the wiseguy
         wiseguy.deactivate(status=opts.status)
 
-        print "Done!"
+        print "Done deactivating", wiseguy
+
 
     @options([
         make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),
