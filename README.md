@@ -250,7 +250,24 @@ Example:
       -h, --help      show this help message and exit
       -i ID, --id=ID  ID of agent.
     
-    
+Example:               
+	
+	$FBI> boss -i 10
+	Boss of  Giacobbe Milanesi [10] :
+	
+	status: active
+	first_name: Simone
+	last_name: Endrizzi
+	title: Mr.
+	gender: male
+	boss_id: 1
+	boss_history: /1/
+	date_of_initiation: 01/01/62
+	middle_initials: G
+	active: 1
+	boss_path: /1/3/
+	id: 3
+
     
     
 ----
