@@ -196,11 +196,8 @@ class FBIApp(Cmd):
         # Reactivate the wiseguy
         wiseguy.reactivate(status=opts.status)
 
-        ex_followers = wiseguy.ex_followers()
-        for follower in ex_followers:
-            follower.reassign_to(wiseguy)
+        print "Done reactivating", wiseguy
 
-        print "Done!"
 
     @options([
         make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),

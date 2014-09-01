@@ -68,6 +68,10 @@ class Wiseguy(Criminal):
             except:
                 boss_history += boss.get('id') + "/"
 
+        #TODO: Hack. Figure out why and remove later.
+        if not str(boss_history).endswith("/"):
+            boss_history += "/"
+
         # Reset boss data.
         self.set('boss_path', "%s%s/" % (boss.get('boss_path'), self.get('id')))
         self.set('boss_history', boss_history)
@@ -102,9 +106,19 @@ class Wiseguy(Criminal):
         for follower in followers:
             follower.reassign_to(heir)
 
-
     def reactivate(self, status):
         ex_followers = Wiseguy.find_all(boss_history=self.get('id'))
+
+        last_boss = self.get('boss_history').split("/")[-2]
+
+        if last_boss != "":
+            ex_boss = Wiseguy.find_one(id=last_boss)
+            if ex_boss:
+                self.reassign_to(ex_boss)
+
+        self.set('status', status)
+        self.set('active', "1")
+        self.save()
 
         for ex_follower in ex_followers:
             ex_follower.reassign_to(self)
