@@ -168,9 +168,7 @@ Example:
 
 ### `recommission`
 
-	Reinstate a wiseguy to active duty automatically setting status to
-	        active.
-	        
+	Reinstate a wiseguy to active duty with given status.	        
 	Usage: recommission [options] arg
 	
 	Options:

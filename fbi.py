@@ -175,8 +175,7 @@ class FBIApp(Cmd):
         make_option('-s', '--status', action="store", type="string", help="New status of agent.", dest="status", default=None)
     ])
     def do_recommission(self, arg, opts=None):
-        """Reinstate a wiseguy to active duty automatically setting status to
-        active.
+        """Reinstate a wiseguy to active duty with given status.
         """
         if not opts.status:
             print "Must provide a status!"
