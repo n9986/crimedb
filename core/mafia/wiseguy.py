@@ -76,8 +76,6 @@ class Wiseguy(Criminal):
         # Save
         self.save()
 
-        # print self, self.get('boss_path'), boss.get('boss_path')
-
         for follower in followers:
             follower.reassign_to(self)
 
@@ -90,22 +88,19 @@ class Wiseguy(Criminal):
         # Find the heir
         heir = self.heir()
 
-        last_boss = self.get('boss_history').split("/")
-
         self.set('boss_path', '/%s/' % self.get('id'))
-        self.set(
-            'boss_history', ''
-        )
         self.set('boss_id', "-1")
         self.set('status', status)
         self.set('active', "0")
+
+        self.save()
 
         # If no heir and no followers, then no need to assign
         if not heir or len(followers) == 0:
             return
 
         for follower in followers:
-            followers.reassign_to(heir)
+            follower.reassign_to(heir)
 
 
     def reactivate(self, status):
