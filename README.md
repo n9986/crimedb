@@ -9,7 +9,7 @@ This is a CLI application which helps manage mafia.
 To run:
     
     # Optional
-    virtualenv --not-site-packages virtualenv
+    virtualenv --no-site-packages virtualenv
     source virtualenv/bin/activate
     
     # Mandatory
