@@ -53,7 +53,7 @@ class FBIApp(Cmd):
         make_option('-l', '--level', action="store", type="string", help="Level up to which followers are needed.", dest="level", default=-1)
     ])
     def do_followers(self, arg, opts=None):
-        """Find the number of followers of a wiseguy"""
+        """Find the followers of a wiseguy"""
         wiseguy = Wiseguy.find_one(id=opts.id)
 
         if not wiseguy:
@@ -203,7 +203,7 @@ class FBIApp(Cmd):
         make_option('-i', '--id', action="store", type="string", help="ID of agent.", dest="id", default=None),
     ])
     def do_tree(self, arg, opts=None):
-        """Draw an ASCII chart
+        """Draw an ASCII chart of the hierarchy under the given wiseguy.
         """
         wiseguy = Wiseguy.find_one(id=opts.id)
 
